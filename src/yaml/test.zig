@@ -166,6 +166,27 @@ test "simple map untyped with a list of maps. no indent 2" {
     try testing.expectEqual(@as(i64, 4), map.get("b").?.list[1].map.get("bar").?.int);
 }
 
+test "simple list untyped with a map of lists" {
+    const source =
+        \\- a:
+        \\  - foo
+        \\- b:
+        \\  - bar
+    ;
+
+    var yaml = try Yaml.load(testing.allocator, source);
+    defer yaml.deinit();
+
+    try testing.expectEqual(@as(usize, 1), yaml.docs.items.len);
+
+    const list = yaml.docs.items[0].list;
+    try testing.expectEqual(@as(usize, 2), list.len);
+    try testing.expect(list[0].map.contains("a"));
+    try testing.expectEqualStrings("foo", list[0].map.get("a").?.list[0].string);
+    try testing.expect(list[1].map.contains("b"));
+    try testing.expectEqualStrings("bar", list[1].map.get("b").?.list[0].string);
+}
+
 test "simple map typed" {
     const source =
         \\a: 0
